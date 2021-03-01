@@ -3,7 +3,7 @@ package filter_test
 import (
 	"testing"
 
-	"github.com/samsarahq/thunder/internal/filter"
+	"github.com/guad/thunder/internal/filter"
 	"github.com/stretchr/testify/assert"
 )
 

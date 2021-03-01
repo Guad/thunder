@@ -11,9 +11,9 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/samsarahq/go/oops"
-	"github.com/samsarahq/thunder/batch"
-	"github.com/samsarahq/thunder/diff"
-	"github.com/samsarahq/thunder/reactive"
+	"github.com/guad/thunder/batch"
+	"github.com/guad/thunder/diff"
+	"github.com/guad/thunder/reactive"
 )
 
 const (

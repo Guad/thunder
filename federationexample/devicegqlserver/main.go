@@ -9,9 +9,9 @@ import (
 	
 	"google.golang.org/grpc"
 
-	"github.com/samsarahq/thunder/federation"
-	"github.com/samsarahq/thunder/graphql/schemabuilder"
-	"github.com/samsarahq/thunder/thunderpb"
+	"github.com/guad/thunder/federation"
+	"github.com/guad/thunder/graphql/schemabuilder"
+	"github.com/guad/thunder/thunderpb"
 
 )
 

@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/samsarahq/thunder/diff"
-	"github.com/samsarahq/thunder/internal"
+	"github.com/guad/thunder/diff"
+	"github.com/guad/thunder/internal"
 	"github.com/stretchr/testify/assert"
 )
 

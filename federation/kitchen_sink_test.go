@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/samsarahq/thunder/batch"
-	"github.com/samsarahq/thunder/graphql/schemabuilder"
+	"github.com/guad/thunder/batch"
+	"github.com/guad/thunder/graphql/schemabuilder"
 )
 
 type Enum int

@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	"github.com/samsarahq/go/oops"
-	"github.com/samsarahq/thunder/graphql"
+	"github.com/guad/thunder/graphql"
 )
 
 const queryString string = "query"

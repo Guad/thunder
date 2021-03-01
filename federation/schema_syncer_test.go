@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/samsarahq/go/oops"
-	"github.com/samsarahq/thunder/graphql/introspection"
-	"github.com/samsarahq/thunder/graphql/schemabuilder"
+	"github.com/guad/thunder/graphql/introspection"
+	"github.com/guad/thunder/graphql/schemabuilder"
 	"github.com/stretchr/testify/require"
 )
 

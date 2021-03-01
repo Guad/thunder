@@ -7,10 +7,10 @@ import (
 	"testing"
 
 	"github.com/kylelemons/godebug/pretty"
-	"github.com/samsarahq/thunder/graphql"
-	"github.com/samsarahq/thunder/graphql/schemabuilder"
-	"github.com/samsarahq/thunder/internal"
-	"github.com/samsarahq/thunder/internal/testgraphql"
+	"github.com/guad/thunder/graphql"
+	"github.com/guad/thunder/graphql/schemabuilder"
+	"github.com/guad/thunder/internal"
+	"github.com/guad/thunder/internal/testgraphql"
 )
 
 type GatewayType int
