@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/samsarahq/thunder/batch"
+	"github.com/samsarahq/thunder/therrors"
 	"github.com/samsarahq/thunder/reactive"
 )
 
@@ -36,14 +37,16 @@ type httpPostBody struct {
 
 type httpResponse struct {
 	Data   interface{} `json:"data"`
-	Errors []string    `json:"errors"`
+	Errors []*therrors.Error    `json:"errors"`
 }
 
 func (h *httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	writeResponse := func(value interface{}, err error) {
 		response := httpResponse{}
 		if err != nil {
-			response.Errors = []string{err.Error()}
+			response.Errors = []*therrors.Error{
+				therrors.ConvertError(err),				
+			}
 		} else {
 			response.Data = value
 		}
