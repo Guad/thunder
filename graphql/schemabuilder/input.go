@@ -119,9 +119,9 @@ func (sb *schemaBuilder) getStructObjectFields(typ reflect.Type) (*graphql.Input
 		Name:        typ.Name(),
 		InputFields: make(map[string]graphql.Type),
 	}
-	if argType.Name != "" {
-		argType.Name += "_InputObject"
-	}
+	// if argType.Name != "" {
+	// 	argType.Name += "_InputObject"
+	// }
 
 	if typ.Kind() != reflect.Struct {
 		return nil, nil, fmt.Errorf("expected struct but received type %s", typ.Kind())
