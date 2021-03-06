@@ -157,6 +157,14 @@ func FetchObjectFromKeys(f interface{}, options ...ObjectOption) ObjectOption {
 	return FetchObjectFromKeysField
 }
 
+func SkipAutoFields(skip bool) ObjectOption {
+	var SkipAutoFieldsOption objectOptionFunc = func(s *Schema, obj *Object) {
+		obj.skipAutoFields = skip
+	}
+	return SkipAutoFieldsOption
+
+}
+
 // Object registers a struct as a GraphQL Object in our Schema.
 // (https://facebook.github.io/graphql/June2018/#sec-Objects)
 // We'll read the fields of the struct to determine it's basic "Fields" and

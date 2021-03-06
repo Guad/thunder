@@ -14,6 +14,8 @@ type Object struct {
 	Methods     Methods // Deprecated, use FieldFunc instead.
 	key         string
 	ServiceName string
+
+	skipAutoFields bool
 }
 
 type paginationObject struct {
@@ -88,7 +90,7 @@ func BatchFilterFieldWithFallback(name string, batchFilter interface{}, filter i
 	textFilterMethod := &method{
 		Fn: batchFilter,
 		BatchArgs: batchArgs{
-			FallbackFunc:          filter,
+			FallbackFunc:       filter,
 			ShouldUseBatchFunc: flag,
 		}, Batch: true,
 		MarkedNonNullable: true}
@@ -145,7 +147,7 @@ func BatchSortFieldWithFallback(name string, batchSort interface{}, sort interfa
 	sortMethod := &method{
 		Fn: batchSort,
 		BatchArgs: batchArgs{
-			FallbackFunc:          sort,
+			FallbackFunc:       sort,
 			ShouldUseBatchFunc: flag,
 		}, Batch: true,
 		MarkedNonNullable: true}
@@ -225,7 +227,7 @@ func (s *Object) BatchFieldFuncWithFallback(name string, batchFunc interface{}, 
 	m := &method{
 		Fn: batchFunc,
 		BatchArgs: batchArgs{
-			FallbackFunc:          fallbackFunc,
+			FallbackFunc:       fallbackFunc,
 			ShouldUseBatchFunc: flag,
 		},
 		Batch: true,
@@ -248,7 +250,7 @@ func (s *Object) ManualPaginationWithFallback(name string, manualPaginatedFunc i
 	m := &method{
 		Fn: manualPaginatedFunc,
 		ManualPaginationArgs: manualPaginationArgs{
-			FallbackFunc:          fallbackFunc,
+			FallbackFunc:       fallbackFunc,
 			ShouldUseBatchFunc: flag,
 		},
 		Paginated: true,
@@ -320,17 +322,19 @@ type concurrencyArgs struct {
 // the different goroutines.
 type NumParallelInvocationsFunc func(ctx context.Context, numNodes int) int
 
-func (f NumParallelInvocationsFunc) apply(m *method) { m.ConcurrencyArgs.numParallelInvocationsFunc = f }
+func (f NumParallelInvocationsFunc) apply(m *method) {
+	m.ConcurrencyArgs.numParallelInvocationsFunc = f
+}
 
 type UseFallbackFlag func(context.Context) bool
 
 type batchArgs struct {
-	FallbackFunc          interface{}
+	FallbackFunc       interface{}
 	ShouldUseBatchFunc UseFallbackFlag
 }
 
 type manualPaginationArgs struct {
-	FallbackFunc          interface{}
+	FallbackFunc       interface{}
 	ShouldUseBatchFunc UseFallbackFlag
 }
 

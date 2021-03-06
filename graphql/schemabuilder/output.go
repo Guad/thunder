@@ -30,11 +30,13 @@ func (sb *schemaBuilder) buildStruct(typ reflect.Type) error {
 	var description string
 	var methods Methods
 	var objectKey string
+	var skipAutoFields bool
 	if object, ok := sb.objects[typ]; ok {
 		name = object.Name
 		description = object.Description
 		methods = object.Methods
 		objectKey = object.key
+		skipAutoFields = object.skipAutoFields
 	}
 
 	if name == "" {
@@ -55,33 +57,35 @@ func (sb *schemaBuilder) buildStruct(typ reflect.Type) error {
 	sb.types[typ] = object
 	sb.typeNames[name] = typ
 
-	for i := 0; i < typ.NumField(); i++ {
-		field := typ.Field(i)
-		fieldInfo, err := parseGraphQLFieldInfo(field)
-		if err != nil {
-			return fmt.Errorf("bad type %s: %s", typ, fieldInfo.Name)
-		}
-		if fieldInfo.Skipped {
-			continue
-		}
-
-		if _, ok := object.Fields[fieldInfo.Name]; ok {
-			return fmt.Errorf("bad type %s: two fields named %s", typ, fieldInfo.Name)
-		}
-
-		built, err := sb.buildField(field)
-		if err != nil {
-			return fmt.Errorf("bad field %s on type %s: %s", fieldInfo.Name, typ, err)
-		}
-		object.Fields[fieldInfo.Name] = built
-		if fieldInfo.KeyField {
-			if object.KeyField != nil {
-				return fmt.Errorf("bad type %s: multiple key fields", typ)
+	if !skipAutoFields {
+		for i := 0; i < typ.NumField(); i++ {
+			field := typ.Field(i)
+			fieldInfo, err := parseGraphQLFieldInfo(field)
+			if err != nil {
+				return fmt.Errorf("bad type %s: %s", typ, fieldInfo.Name)
 			}
-			if !isScalarType(built.Type) {
-				return fmt.Errorf("bad type %s: key type must be scalar, got %T", typ, built.Type)
+			if fieldInfo.Skipped {
+				continue
 			}
-			object.KeyField = built
+
+			if _, ok := object.Fields[fieldInfo.Name]; ok {
+				return fmt.Errorf("bad type %s: two fields named %s", typ, fieldInfo.Name)
+			}
+
+			built, err := sb.buildField(field)
+			if err != nil {
+				return fmt.Errorf("bad field %s on type %s: %s", fieldInfo.Name, typ, err)
+			}
+			object.Fields[fieldInfo.Name] = built
+			if fieldInfo.KeyField {
+				if object.KeyField != nil {
+					return fmt.Errorf("bad type %s: multiple key fields", typ)
+				}
+				if !isScalarType(built.Type) {
+					return fmt.Errorf("bad type %s: key type must be scalar, got %T", typ, built.Type)
+				}
+				object.KeyField = built
+			}
 		}
 	}
 
