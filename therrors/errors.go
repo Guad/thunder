@@ -6,14 +6,9 @@ import (
 
 // Error represents the error returned by server in response
 type Error struct {
-	Message    string     `json:"message"`
-	Extensions *Extension `json:"extensions"`
-	Paths      []string   `json:"paths"`
-}
-
-// Extension contains extra fields in the error
-type Extension struct {
-	Code string `json:"code"`
+	Message    string                 `json:"message"`
+	Extensions map[string]interface{} `json:"extensions"`
+	Paths      []string               `json:"paths"`
 }
 
 func (e *Error) Error() string {
@@ -29,11 +24,9 @@ func NestErrorPaths(e error, path string) error {
 	err := ConvertError(e)
 
 	newError := &Error{
-		Paths: []string{path},
-		Extensions: &Extension{
-			Code: err.Extensions.Code,
-		},
-		Message: err.Message,
+		Paths:      []string{path},
+		Extensions: err.Extensions,
+		Message:    err.Message,
 	}
 	newError.Paths = append(newError.Paths, err.Paths...)
 
@@ -42,6 +35,10 @@ func NestErrorPaths(e error, path string) error {
 
 type errorWithCode interface {
 	Code() string
+}
+
+type errorWithExtensions interface {
+	Extensions() map[string]interface{}
 }
 
 // ConvertError converts any error to jerrors.Error
@@ -53,12 +50,18 @@ func ConvertError(e error) *Error {
 			code = coder.Code()
 		}
 
+		exts := make(map[string]interface{})
+
+		if extender, ok := e.(errorWithExtensions); ok {
+			exts = extender.Extensions()
+		}
+
+		exts["code"] = code
+
 		return &Error{
-			Paths: []string{},
-			Extensions: &Extension{
-				Code: code,
-			},
-			Message: e.Error(),
+			Paths:      []string{},
+			Extensions: exts,
+			Message:    e.Error(),
 		}
 	}
 
