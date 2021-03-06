@@ -2,8 +2,6 @@ package therrors
 
 import (
 	"strings"
-
-	"google.golang.org/grpc/status"
 )
 
 // Error represents the error returned by server in response
@@ -42,18 +40,25 @@ func NestErrorPaths(e error, path string) error {
 	return newError
 }
 
+type errorWithCode interface {
+	Code() string
+}
+
 // ConvertError converts any error to jerrors.Error
 func ConvertError(e error) *Error {
 	err, ok := (e).(*Error)
 	if !ok {
-		codeErr := status.Convert(e)
+		code := "Unknown"
+		if coder, ok := e.(errorWithCode); ok {
+			code = coder.Code()
+		}
 
 		return &Error{
 			Paths: []string{},
 			Extensions: &Extension{
-				Code: codeErr.Code().String(),
+				Code: code,
 			},
-			Message: codeErr.Message(),
+			Message: e.Error(),
 		}
 	}
 
@@ -74,4 +79,3 @@ func (e *MultiError) Error() string {
 
 	return s.String()
 }
-
