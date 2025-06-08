@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kylelemons/godebug/pretty"
 	"github.com/guad/thunder/graphql"
 	"github.com/guad/thunder/graphql/schemabuilder"
 	"github.com/guad/thunder/internal"
 	"github.com/guad/thunder/internal/testgraphql"
+	"github.com/kylelemons/godebug/pretty"
 )
 
 type GatewayType int
@@ -300,5 +300,63 @@ func TestUnionStruct(t *testing.T) {
 	if d := pretty.Compare(internal.AsJSON(result), internal.ParseJSON(`
 		{ "wrapper": { "x": { "thing": "b"} } }`)); d != "" {
 		t.Errorf("expected did not match result: %s", d)
+	}
+}
+
+// TestUnionFragmentSpread verifies that named fragments on a union type
+// correctly flatten nested inline fragments for each member type.
+func TestUnionFragmentSpread(t *testing.T) {
+	type MyUnion struct {
+		schemabuilder.Union
+
+		*UnionPart1
+		*UnionPart2
+	}
+
+	type WrapperU struct {
+		X *MyUnion
+	}
+
+	schema := schemabuilder.NewSchema()
+	query := schema.Query()
+	query.FieldFunc("wrapperU", func() (*WrapperU, error) {
+		// Only UnionPart1 is set
+		return &WrapperU{X: &MyUnion{UnionPart1: &UnionPart1{"foo"}}}, nil
+	})
+
+	builtSchema := schema.MustBuild()
+	ctx := context.Background()
+
+	// Use a named fragment on the union, applied inside the x field
+	q := graphql.MustParse(`
+       {
+           wrapperU {
+               x {
+                   ...Intermediary
+               }
+           }
+       }
+	   fragment Intermediary on MyUnion {
+   	        ...FragmentOnMyUnion
+       }
+       fragment FragmentOnMyUnion on MyUnion {
+           ... on UnionPart1 { otherThing }
+           ... on UnionPart2 { thing }
+       }
+   `, nil)
+
+	if err := graphql.PrepareQuery(ctx, builtSchema.Query, q.SelectionSet); err != nil {
+		t.Error(err)
+	}
+
+	e := testgraphql.NewExecutorWrapper(t)
+	result, err := e.Execute(ctx, builtSchema.Query, nil, q)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+
+	expected := internal.ParseJSON(`{ "wrapperU": { "x": { "otherThing": "foo" } } }`)
+	if d := pretty.Compare(internal.AsJSON(result), expected); d != "" {
+		t.Errorf("unexpected result: %s", d)
 	}
 }

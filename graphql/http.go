@@ -1,15 +1,14 @@
 package graphql
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
-	"net/http"
-	"sync"
+   "context"
+   "encoding/json"
+   "errors"
+   "net/http"
+   "sync"
 
-	"github.com/guad/thunder/batch"
-	"github.com/guad/thunder/therrors"
-	"github.com/guad/thunder/reactive"
+   "github.com/guad/thunder/batch"
+   "github.com/guad/thunder/reactive"
 )
 
 func HTTPHandler(schema *Schema, middlewares ...MiddlewareFunc) http.Handler {
@@ -35,21 +34,22 @@ type httpPostBody struct {
 	Variables map[string]interface{} `json:"variables"`
 }
 
+// httpResponse defines the shape of the JSON response for HTTP GraphQL requests.
+// Errors are returned as an array of error message strings.
 type httpResponse struct {
-	Data   interface{} `json:"data"`
-	Errors []*therrors.Error    `json:"errors"`
+   Data   interface{} `json:"data"`
+   Errors []string    `json:"errors"`
 }
 
 func (h *httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	writeResponse := func(value interface{}, err error) {
-		response := httpResponse{}
-		if err != nil {
-			response.Errors = []*therrors.Error{
-				therrors.ConvertError(err),				
-			}
-		} else {
-			response.Data = value
-		}
+   writeResponse := func(value interface{}, err error) {
+       response := httpResponse{}
+       if err != nil {
+           // Return only the error message
+           response.Errors = []string{err.Error()}
+       } else {
+           response.Data = value
+       }
 
 		responseJSON, err := json.Marshal(response)
 		if err != nil {

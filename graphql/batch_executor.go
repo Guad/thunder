@@ -396,11 +396,25 @@ func resolveUnionBatch(ctx context.Context, sources []interface{}, typ *Union, s
 	var workUnits []*WorkUnit
 	for srcType, sources := range sourcesByType {
 		gqlType := typ.Types[srcType]
-		for _, fragment := range selectionSet.Fragments {
-			if fragment.On != srcType {
-				continue
+		// Collect all fragment selection sets applicable to this union member type,
+		// including nested fragments defined on the union itself.
+		var sets []*SelectionSet
+		// recurse through fragments: if fragment.On equals member type, collect it;
+		// if fragment.On equals union type, recurse into its nested fragments
+		var collect func(frags []*Fragment)
+		collect = func(frags []*Fragment) {
+			for _, f := range frags {
+				if f.On == srcType {
+					sets = append(sets, f.SelectionSet)
+				} else if f.On == typ.Name {
+					// nested fragment on union type: dive deeper
+					collect(f.SelectionSet.Fragments)
+				}
 			}
-			units, err := resolveObjectBatch(ctx, sources, gqlType, fragment.SelectionSet, destinationsByType[srcType])
+		}
+		collect(selectionSet.Fragments)
+		for _, selSet := range sets {
+			units, err := resolveObjectBatch(ctx, sources, gqlType, selSet, destinationsByType[srcType])
 			if err != nil {
 				return nil, err
 			}
